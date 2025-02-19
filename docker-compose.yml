@@ -1,0 +1,71 @@
+services:
+  app:
+    user: "www-data"
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: laravel_base_web
+    restart: always
+    working_dir: /var/www/html
+    volumes:
+      - .:/var/www/html
+      - ./storage:/var/www/html/storage
+      - ./bootstrap/cache:/var/www/html/bootstrap/cache
+    ports:
+      - "8000:80"
+    networks:
+      - laravel
+    depends_on:
+      - db
+      - redis
+      - node
+    environment:
+      APP_ENV: local
+      APP_DEBUG: true
+      DB_CONNECTION: mysql
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_DATABASE: dpb
+      DB_USERNAME: dpb
+      DB_PASSWORD: dpb
+      REDIS_HOST: redis
+
+  db:
+    image: mysql:8.0
+    container_name: laravel_base_db
+    restart: always
+    environment:
+      MYSQL_DATABASE: dpb
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_USER: dpb
+      MYSQL_PASSWORD: dpb
+    ports:
+      - "3306:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+    networks:
+      - laravel
+  redis:
+    image: redis:alpine
+    container_name: laravel_base_redis
+    restart: always
+    networks:
+      - laravel
+
+  node:
+    image: node:18-alpine
+    container_name: laravel_base_node
+    working_dir: /var/www/html
+    volumes:
+      - .:/var/www/html
+    networks:
+      - laravel
+    ports:
+      - "5173:5173"
+    command: [ "sh", "-c", "[ ! -d node_modules ] && npm install; npm run dev" ]
+
+networks:
+  laravel:
+
+volumes:
+  db_data:
