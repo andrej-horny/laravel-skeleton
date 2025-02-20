@@ -35,7 +35,7 @@ docker-setup:
 	docker exec -it $(CONTAINER_PHP) php artisan config:clear
 	docker exec  $(CONTAINER_PHP) bash -c "[ -L public/storage ] && rm public/storage || true"
 	docker exec -it $(CONTAINER_PHP) php artisan storage:link
-	docker exec -w /var/www/html -it $(CONTAINER_NODE) npm install
+	docker exec -it $(CONTAINER_NODE) sh -c "cd /var/www/html && npm install";
 
 start:
 	docker-compose up -d
