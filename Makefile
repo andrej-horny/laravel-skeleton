@@ -29,13 +29,13 @@ fix-perm:
 
 docker-setup:
 	@if [ ! -d "vendor" ]; then docker exec $(CONTAINER_PHP) composer install; fi
-	@if [ ! -f ".env" ]; then docker exec -it $(CONTAINER_PHP) bash -c "sudo cp .env.example .env"; fi
+	@if [ ! -f ".env" ]; then docker exec -it $(CONTAINER_PHP) bash -c "sudo cp .env.example .env && sudo chown www-data:www-data /var/www/html/.env && sudo chmod 664 /var/www/html/.env"; fi
 	docker exec -it $(CONTAINER_PHP) php artisan key:generate
 	docker exec -it $(CONTAINER_PHP) php artisan migrate --force
 	docker exec -it $(CONTAINER_PHP) php artisan config:clear
 	docker exec  $(CONTAINER_PHP) bash -c "[ -L public/storage ] && rm public/storage || true"
 	docker exec -it $(CONTAINER_PHP) php artisan storage:link
-	docker exec -it $(CONTAINER_NODE) npm install
+	docker exec -w /var/www/html -it $(CONTAINER_NODE) npm install
 
 start:
 	docker-compose up -d
