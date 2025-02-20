@@ -8,29 +8,37 @@ $(warning Makefile should not be run inside a Docker container. Exiting...)
 $(shell exit 1)
 endif
 
-.PHONY: install setup start stop restart rebuild code terminal
+.PHONY: install build fix-perm docker-setup start stop restart rebuild code terminal vite
 
 install:
-	@if [ ! -d "./app" ]; then \
-		echo "Repozitár ešte neexistuje. Musíš ho najprv vytvoriť."; \
-		exit 1; \
+	@if [ ! -d "vendor" ]; then \
+		echo "🟢 Spúšťam inštaláciu Laravel projektu..."; \
+		make build; \
+		make fix-perm; \
+		make docker-setup; \
 	else \
-		echo "Laravel base už existuje, inštalácia preskočená."; \
+		echo "⚠️ Laravel base už existuje, inštalácia preskočená."; \
 	fi
 
-setup:
-	cd app && docker exec -it $(CONTAINER_PHP) composer install --no-dev --optimize-autoloader
-	cd app && cp .env.example .env
-	cd app && docker exec -it $(CONTAINER_PHP) php artisan key:generate
-	cd app && docker exec -it $(CONTAINER_PHP) php artisan migrate --force
-	cd app && docker exec -it $(CONTAINER_PHP) php artisan config:clear
-	cd app && docker exec -it $(CONTAINER_PHP) chown -R www-data:www-data storage bootstrap/cache
-	cd app && docker exec -it $(CONTAINER_PHP) chmod -R 775 storage bootstrap/cache
-	cd app && docker exec -it $(CONTAINER_NODE) npm install
-	cd app && docker exec -it $(CONTAINER_NODE) npm run dev
+build:
+	docker compose up -d --build
+
+fix-perm:
+	docker exec -it $(CONTAINER_PHP) bash -c "sudo chown -R www-data:www-data /var/www/html"
+	docker exec -it $(CONTAINER_PHP) bash -c "sudo chmod -R 775 /var/www/html"
+
+docker-setup:
+	@if [ ! -d "vendor" ]; then docker exec $(CONTAINER_PHP) composer install; fi
+	@if [ ! -f ".env" ]; then docker exec -it $(CONTAINER_PHP) bash -c "sudo cp .env.example .env"; fi
+	docker exec -it $(CONTAINER_PHP) php artisan key:generate
+	docker exec -it $(CONTAINER_PHP) php artisan migrate --force
+	docker exec -it $(CONTAINER_PHP) php artisan config:clear
+	docker exec  $(CONTAINER_PHP) bash -c "[ -L public/storage ] && rm public/storage || true"
+	docker exec -it $(CONTAINER_PHP) php artisan storage:link
+	docker exec -it $(CONTAINER_NODE) npm install
 
 start:
-	docker-compose up -d --build
+	docker-compose up -d
 
 stop:
 	docker-compose down
@@ -48,4 +56,4 @@ terminal:
 	docker exec -u www-data -it $(CONTAINER_PHP) bash
 
 vite:
-	docker exec -it laravel_base_node sh -c "npm run dev"
+	docker logs -f laravel_base_node
