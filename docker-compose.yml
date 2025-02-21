@@ -57,9 +57,9 @@ services:
     container_name: ${COMPOSE_PROJECT_NAME}_node
     working_dir: /var/www/html
     volumes:
+      - .:/var/www/html
       - node_modules:/var/www/html/node_modules
     networks:
-      - .:/var/www/html
       - dpb_network
     ports:
       - "${VITE_PORT}:5173"
