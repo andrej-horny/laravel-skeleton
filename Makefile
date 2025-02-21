@@ -23,6 +23,13 @@ install:
 		make build; \
 		make fix-perm; \
 		make docker-setup; \
+		echo ""; \
+		echo "🚀 **Projekt úspešne nainštalovaný!**"; \
+		echo "----------------------------------"; \
+		echo "🌐 Web aplikácia beží na: http://localhost:$$WEB_PORT"; \
+		echo "⚡ Vite beží na: http://localhost:$$VITE_PORT"; \
+		echo "🛢️  MySQL beží na porte: $$MYSQL_PORT"; \
+		echo "----------------------------------"; \
 	else \
 		echo "⚠️ DPB Laravel base už existuje, inštalácia preskočená."; \
 	fi

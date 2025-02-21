@@ -12,7 +12,7 @@ services:
       - app_storage:/var/www/html/storage     # Named volume, zostáva po docker-compose down (treba -v na zmazanie)
       - /var/www/html/bootstrap/cache         # Anonymné volume (zmaže sa pri down)
     ports:
-      - "${HTTP_PORT}:80"
+      - "${WEB_PORT}:80"
     networks:
       - dpb_network
     depends_on:
