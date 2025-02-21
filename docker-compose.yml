@@ -59,6 +59,7 @@ services:
     volumes:
       - node_modules:/var/www/html/node_modules
     networks:
+      - .:/var/www/html
       - dpb_network
     ports:
       - "${VITE_PORT}:5173"
