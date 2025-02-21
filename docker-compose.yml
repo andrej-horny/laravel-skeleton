@@ -4,7 +4,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: laravel_base_web
+    container_name: dpb_base_web
     restart: always
     working_dir: /var/www/html
     volumes:
@@ -14,7 +14,7 @@ services:
     ports:
       - "8000:80"
     networks:
-      - laravel
+      - dpb
     depends_on:
       - db
       - redis
@@ -32,7 +32,7 @@ services:
 
   db:
     image: mysql:8.0
-    container_name: laravel_base_db
+    container_name: dpb_base_db
     restart: always
     environment:
       MYSQL_DATABASE: dpb
@@ -44,28 +44,28 @@ services:
     volumes:
       - db_data:/var/lib/mysql
     networks:
-      - laravel
+      - dpb
   redis:
     image: redis:alpine
-    container_name: laravel_base_redis
+    container_name: dpb_base_redis
     restart: always
     networks:
-      - laravel
+      - dpb
 
   node:
     image: node:18-alpine
-    container_name: laravel_base_node
+    container_name: dpb_base_node
     working_dir: /var/www/html
     volumes:
       - .:/var/www/html
     networks:
-      - laravel
+      - dpb
     ports:
       - "5173:5173"
     command: [ "sh", "-c", "[ ! -d node_modules ] && npm install; npm run dev" ]
 
 networks:
-  laravel:
+  dpb:
 
 volumes:
   db_data:

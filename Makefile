@@ -1,6 +1,6 @@
 PROJECT_NAME=dpb-laravel-base
-CONTAINER_PHP=laravel_base_web
-CONTAINER_NODE=laravel_base_node
+CONTAINER_PHP=dpb_base_web
+CONTAINER_NODE=dpb_base_node
 
 # Prevent running Makefile inside Docker
 ifneq ($(shell test -f /.dockerenv && echo "true"),)
@@ -17,7 +17,7 @@ install:
 		make fix-perm; \
 		make docker-setup; \
 	else \
-		echo "⚠️ Laravel base už existuje, inštalácia preskočená."; \
+		echo "⚠️ DPB Laravel base už existuje, inštalácia preskočená."; \
 	fi
 
 build:
@@ -56,4 +56,4 @@ terminal:
 	docker exec -u www-data -it $(CONTAINER_PHP) bash
 
 vite:
-	docker logs -f laravel_base_node
+	docker logs -f $(CONTAINER_NODE)
