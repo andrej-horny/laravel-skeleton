@@ -23,13 +23,7 @@ install:
 		make build; \
 		make fix-perm; \
 		make docker-setup; \
-		echo ""; \
-		echo "🚀 **Projekt úspešne nainštalovaný!**"; \
-		echo "----------------------------------"; \
-		echo "🌐 Web aplikácia beží na: http://localhost:$$WEB_PORT"; \
-		echo "⚡ Vite beží na: http://localhost:$$VITE_PORT"; \
-		echo "🛢️  MySQL beží na porte: $$MYSQL_PORT"; \
-		echo "----------------------------------"; \
+		make show-ports; \
 	else \
 		echo "⚠️ DPB Laravel base už existuje, inštalácia preskočená."; \
 	fi
@@ -104,5 +98,15 @@ set-env:
 	grep -q "^MYSQL_PORT=" .env && sed -i "s/^MYSQL_PORT=.*/MYSQL_PORT=$$MYSQL_PORT/" .env || echo "MYSQL_PORT=$$MYSQL_PORT" >> .env; \
 	echo "✅ Aktualizované v .env: COMPOSE_PROJECT_NAME=$(COMPOSE_PROJECT_NAME), WEB_PORT=$$WEB_PORT, VITE_PORT=$$VITE_PORT, MYSQL_PORT=$$MYSQL_PORT";
 
+show-ports:
+	echo ""; \
+	echo "🚀 **Projekt úspešne nainštalovaný!**"; \
+	echo "----------------------------------"; \
+	echo "🌐 Web aplikácia beží na: http://localhost:$$(grep '^WEB_PORT=' .env | cut -d '=' -f2)"; \
+	echo "⚡ Vite beží na: http://localhost:$$(grep '^VITE_PORT=' .env | cut -d '=' -f2)"; \
+	echo "🛢️  MySQL beží na porte: $$(grep '^MYSQL_PORT=' .env | cut -d '=' -f2)"; \
+	echo "----------------------------------"; \
+
 test:
-	@echo $$(for p in {8000..8100}; do ss -tln | grep -q ":$$p " || { echo $$p; break; }; done);
+	@echo "🔵 Použité porty:"
+	@cat .env | grep -E 'WEB_PORT|VITE_PORT|MYSQL_PORT'
