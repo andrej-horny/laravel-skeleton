@@ -1,5 +1,10 @@
 import { defineConfig } from 'vite';
 import laravel from 'laravel-vite-plugin';
+import dotenv from 'dotenv';
+import dotenvExpand from 'dotenv-expand';
+
+// Načítaj .env a expanduj premenné
+dotenvExpand.expand(dotenv.config());
 
 export default defineConfig({
     plugins: [
@@ -10,11 +15,11 @@ export default defineConfig({
     ],
     server: {
         host: '0.0.0.0',
-        port: process.env.VITE_PORT || 5173,
+        port: parseInt(process.env.VITE_PORT, 10) || 5173, // Zabezpečí, že je to číslo
         strictPort: true,
         hmr: {
             host: 'localhost',
-            port: process.env.VITE_PORT || 5173
+            port: parseInt(process.env.VITE_PORT, 10) || 5173
         }
     }
 });
