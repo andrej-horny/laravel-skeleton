@@ -18,7 +18,7 @@ export default defineConfig({
         port: parseInt(process.env.VITE_PORT, 10) || 5173, // Zabezpečí, že je to číslo
         strictPort: true,
         hmr: {
-            host: 'localhost',
+            host: '0.0.0.0',
             port: parseInt(process.env.VITE_PORT, 10) || 5173
         }
     }
