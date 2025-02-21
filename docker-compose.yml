@@ -8,13 +8,13 @@ services:
     restart: always
     working_dir: /var/www/html
     volumes:
-      - .:/var/www/html                                           # Bind mount, viditeľný vo windowse
-      - ${COMPOSE_PROJECT_NAME}_app_storage:/var/www/html/storage # Named volume, zostáva po docker-compose down (treba -v na zmazanie)
-      - /var/www/html/bootstrap/cache                             # Anonymné volume (zmaže sa pri down)
+      - .:/var/www/html                       # Bind mount, viditeľný vo windowse
+      - app_storage:/var/www/html/storage     # Named volume, zostáva po docker-compose down (treba -v na zmazanie)
+      - /var/www/html/bootstrap/cache         # Anonymné volume (zmaže sa pri down)
     ports:
-      - "8080:80"
+      - "${HTTP_PORT}:80"
     networks:
-      - ${COMPOSE_PROJECT_NAME}_network
+      - dpb_network
     depends_on:
       - db
       - redis
@@ -40,34 +40,38 @@ services:
       MYSQL_USER: dpb
       MYSQL_PASSWORD: dpb
     ports:
-      - "3307:3306"
+      - "${MYSQL_PORT}:3306"
     volumes:
-      - ${COMPOSE_PROJECT_NAME}_db_data:/var/lib/mysql
+      - db_data:/var/lib/mysql
     networks:
-      - ${COMPOSE_PROJECT_NAME}_network
+      - dpb_network
   redis:
     image: redis:alpine
     container_name: ${COMPOSE_PROJECT_NAME}_redis
     restart: always
     networks:
-      - ${COMPOSE_PROJECT_NAME}_network
+      - dpb_network
 
   node:
     image: node:18-alpine
     container_name: ${COMPOSE_PROJECT_NAME}_node
     working_dir: /var/www/html
     volumes:
-      - ${COMPOSE_PROJECT_NAME}_node_modules:/var/www/html/node_modules
+      - node_modules:/var/www/html/node_modules
     networks:
-      - ${COMPOSE_PROJECT_NAME}_network
+      - dpb_network
     ports:
-      - "5173:5173"
+      - "${VITE_PORT}:5173"
     command: [ "sh", "-c", "[ ! -d node_modules ] && npm install; npm run dev" ]
 
 networks:
-  ${COMPOSE_PROJECT_NAME}_network:
+  dpb_network:
+    name: ${COMPOSE_PROJECT_NAME}_network
 
 volumes:
-  ${COMPOSE_PROJECT_NAME}_app_storage:
-  ${COMPOSE_PROJECT_NAME}_db_data:
-  ${COMPOSE_PROJECT_NAME}_node_modules:
+  app_storage:
+    name: ${COMPOSE_PROJECT_NAME}_app_storage
+  db_data:
+    name: ${COMPOSE_PROJECT_NAME}_db_data
+  node_modules:
+    name: ${COMPOSE_PROJECT_NAME}_node_modules

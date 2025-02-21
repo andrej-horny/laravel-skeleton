@@ -1,8 +1,12 @@
+# Ak existuje .env, načítaj COMPOSE_PROJECT_NAME. Ak nie, použi názov priečinka.
+COMPOSE_PROJECT_NAME := $(shell [ -f .env ] && grep -E '^COMPOSE_PROJECT_NAME=' .env | cut -d '=' -f2 || basename $(PWD))
+
+# Kontajnery budú pomenované na základe COMPOSE_PROJECT_NAME
 PROJECT_NAME=dpb-laravel-base
-CONTAINER_PHP=dpb_base_web
-CONTAINER_NODE=dpb_base_node
-CONTAINER_DB=dpb_base_db
-CONTAINER_REDIS=dpb_base_redis
+CONTAINER_PHP=$(COMPOSE_PROJECT_NAME)_web
+CONTAINER_NODE=$(COMPOSE_PROJECT_NAME)_node
+CONTAINER_DB=$(COMPOSE_PROJECT_NAME)_db
+CONTAINER_REDIS=$(COMPOSE_PROJECT_NAME)_redis
 
 # Prevent running Makefile inside Docker
 ifneq ($(shell test -f /.dockerenv && echo "true"),)
@@ -10,11 +14,12 @@ $(warning Makefile should not be run inside a Docker container. Exiting...)
 $(shell exit 1)
 endif
 
-.PHONY: install build fix-perm docker-setup start stop restart rebuild code terminal vite
+.PHONY: install build fix-perm docker-setup start stop restart rebuild code terminal vite set-env
 
 install:
 	@if [ ! -d "vendor" ]; then \
 		echo "🟢 Spúšťam inštaláciu Laravel projektu..."; \
+		make set-env; \
 		make build; \
 		make fix-perm; \
 		make docker-setup; \
@@ -33,6 +38,11 @@ docker-setup:
 	@if [ ! -d "vendor" ]; then docker exec $(CONTAINER_PHP) composer install; fi
 	@if [ ! -f ".env" ]; then docker exec -it $(CONTAINER_PHP) bash -c "sudo cp .env.example .env && sudo chown www-data:www-data /var/www/html/.env && sudo chmod 664 /var/www/html/.env"; fi
 	docker exec -it $(CONTAINER_PHP) php artisan key:generate
+	@echo "⏳ Čakám na MySQL databázu..."
+	@until docker exec -it $(CONTAINER_DB) mysqladmin ping -h"127.0.0.1" --silent; do \
+		echo "❌ MySQL ešte nie je pripravený, čakám..."; \
+		sleep 2; \
+	done
 	docker exec -it $(CONTAINER_PHP) php artisan migrate --force
 	docker exec -it $(CONTAINER_PHP) php artisan config:clear
 	docker exec  $(CONTAINER_PHP) bash -c "[ -L public/storage ] && rm public/storage || true"
@@ -67,3 +77,25 @@ reset-docker:
 	docker network prune -f
 	docker volume prune -f
 	docker system prune -af --volumes
+
+SHELL := /bin/bash
+
+set-env:
+	@echo "🔍 Kontrola dostupných portov..."
+	@if [ ! -f ".env" ]; then \
+		echo "📝 Vytváram .env súbor z .env.example..."; \
+		cp .env.example .env; \
+	fi
+	@if ! grep -q "COMPOSE_PROJECT_NAME=" .env; then \
+		echo "COMPOSE_PROJECT_NAME=$(COMPOSE_PROJECT_NAME)" >> .env; \
+	fi
+	@WEB_PORT=$$(for p in $$(seq 8000 8100); do ss -tln | grep -q ":$$p " || { echo $$p; break; }; done); \
+	VITE_PORT=$$(for p in $$(seq 5100 5200); do ss -tln | grep -q ":$$p " || { echo $$p; break; }; done); \
+	MYSQL_PORT=$$(for p in $$(seq 3306 3400); do ss -tln | grep -q ":$$p " || { echo $$p; break; }; done); \
+	grep -q "^WEB_PORT=" .env && sed -i "s/^WEB_PORT=.*/WEB_PORT=$$WEB_PORT/" .env || echo "WEB_PORT=$$WEB_PORT" >> .env; \
+	grep -q "^VITE_PORT=" .env && sed -i "s/^VITE_PORT=.*/VITE_PORT=$$VITE_PORT/" .env || echo "VITE_PORT=$$VITE_PORT" >> .env; \
+	grep -q "^MYSQL_PORT=" .env && sed -i "s/^MYSQL_PORT=.*/MYSQL_PORT=$$MYSQL_PORT/" .env || echo "MYSQL_PORT=$$MYSQL_PORT" >> .env; \
+	echo "✅ Aktualizované v .env: COMPOSE_PROJECT_NAME=$(COMPOSE_PROJECT_NAME), WEB_PORT=$$WEB_PORT, VITE_PORT=$$VITE_PORT, MYSQL_PORT=$$MYSQL_PORT";
+
+test:
+	@echo $$(for p in {8000..8100}; do ss -tln | grep -q ":$$p " || { echo $$p; break; }; done);
