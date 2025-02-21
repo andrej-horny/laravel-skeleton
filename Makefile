@@ -99,13 +99,13 @@ set-env:
 	echo "✅ Aktualizované v .env: COMPOSE_PROJECT_NAME=$(COMPOSE_PROJECT_NAME), WEB_PORT=$$WEB_PORT, VITE_PORT=$$VITE_PORT, MYSQL_PORT=$$MYSQL_PORT";
 
 show-ports:
-	echo ""; \
-	echo "🚀 **Projekt úspešne nainštalovaný!**"; \
-	echo "----------------------------------"; \
-	echo "🌐 Web aplikácia beží na: http://localhost:$$(grep '^WEB_PORT=' .env | cut -d '=' -f2)"; \
-	echo "⚡ Vite beží na: http://localhost:$$(grep '^VITE_PORT=' .env | cut -d '=' -f2)"; \
-	echo "🛢️  MySQL beží na porte: $$(grep '^MYSQL_PORT=' .env | cut -d '=' -f2)"; \
-	echo "----------------------------------"; \
+	@echo ""; \
+	@echo "🚀 **Projekt úspešne nainštalovaný!**"; \
+	@echo "----------------------------------"; \
+	@echo "🌐 Web aplikácia beží na: http://localhost:$$(grep '^WEB_PORT=' .env | cut -d '=' -f2)"; \
+	@echo "⚡ Vite beží na: http://localhost:$$(grep '^VITE_PORT=' .env | cut -d '=' -f2)"; \
+	@echo "🛢️  MySQL beží na porte: $$(grep '^MYSQL_PORT=' .env | cut -d '=' -f2)"; \
+	@echo "----------------------------------"; \
 
 test:
 	@echo "🔵 Použité porty:"
