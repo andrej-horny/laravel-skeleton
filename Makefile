@@ -1,6 +1,8 @@
 PROJECT_NAME=dpb-laravel-base
 CONTAINER_PHP=dpb_base_web
 CONTAINER_NODE=dpb_base_node
+CONTAINER_DB=dpb_base_db
+CONTAINER_REDIS=dpb_base_redis
 
 # Prevent running Makefile inside Docker
 ifneq ($(shell test -f /.dockerenv && echo "true"),)
@@ -57,3 +59,11 @@ terminal:
 
 vite:
 	docker logs -f $(CONTAINER_NODE)
+
+reset-docker:
+	docker stop $(docker ps -aq)
+	docker rm -f $(docker ps -aq)
+	docker rmi -f $(docker images -q)
+	docker network prune -f
+	docker volume prune -f
+	docker system prune -af --volumes
