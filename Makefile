@@ -91,7 +91,7 @@ set-env:
 		echo "COMPOSE_PROJECT_NAME=$(COMPOSE_PROJECT_NAME)" >> .env; \
 	fi
 	@WEB_PORT=$$(for p in $$(seq 8000 8100); do ss -tln | grep -q ":$$p " || { echo $$p; break; }; done); \
-	VITE_PORT=$$(for p in $$(seq 5100 5200); do ss -tln | grep -q ":$$p " || { echo $$p; break; }; done); \
+	VITE_PORT=$$(for p in $$(seq 5170 5270); do ss -tln | grep -q ":$$p " || { echo $$p; break; }; done); \
 	MYSQL_PORT=$$(for p in $$(seq 3306 3400); do ss -tln | grep -q ":$$p " || { echo $$p; break; }; done); \
 	grep -q "^WEB_PORT=" .env && sed -i "s/^WEB_PORT=.*/WEB_PORT=$$WEB_PORT/" .env || echo "WEB_PORT=$$WEB_PORT" >> .env; \
 	grep -q "^VITE_PORT=" .env && sed -i "s/^VITE_PORT=.*/VITE_PORT=$$VITE_PORT/" .env || echo "VITE_PORT=$$VITE_PORT" >> .env; \

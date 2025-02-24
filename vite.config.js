@@ -14,11 +14,11 @@ export default defineConfig({
         }),
     ],
     server: {
-        host: '0.0.0.0',
-        port: parseInt(process.env.VITE_PORT, 10) || 5173, // Zabezpečí, že je to číslo
+        host: true,
+        port: parseInt(process.env.VITE_PORT, 10) || 5173,
         strictPort: true,
         hmr: {
-            host: '0.0.0.0',
+            host: 'localhost',
             port: parseInt(process.env.VITE_PORT, 10) || 5173
         }
     }
