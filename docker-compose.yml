@@ -63,7 +63,7 @@ services:
       - dpb_network
     ports:
       - "${VITE_PORT}:${VITE_PORT}"
-    command: [ "sh", "-c", "npm install && tail -f /dev/null" ]
+    command: [ "sh", "-c", "npm install && (npm run dev || sleep infinity)" ]
 
 networks:
   dpb_network:
